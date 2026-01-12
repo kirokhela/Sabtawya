@@ -8,6 +8,7 @@ import {
   getStudents,
   updateStudent
 } from '../actions';
+import Button from '../components/Button';
 
 import type { Student } from '../actions';
 
@@ -133,12 +134,9 @@ export default function StudentsPage() {
 
       {/* Add Button */}
       {!isAdding && !editingId && (
-        <button
-          onClick={() => setIsAdding(true)}
-          className="w-full mb-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition"
-        >
-          ➕ إضافة مخدوم جديد
-        </button>
+        <div className="w-full mb-6">
+          <Button onClick={() => setIsAdding(true)} className="w-full justify-center" variant="primary">➕ إضافة مخدوم جديد</Button>
+        </div>
       )}
 
       {/* Create/Edit Form */}
@@ -200,18 +198,8 @@ export default function StudentsPage() {
 
           {/* Buttons */}
           <div className="flex gap-4">
-            <button
-              onClick={editingId ? handleUpdate : handleCreate}
-              className="flex-1 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded transition"
-            >
-              {editingId ? '💾 حفظ' : '➕ إضافة'}
-            </button>
-            <button
-              onClick={cancelForm}
-              className="flex-1 py-2 bg-gray-400 hover:bg-gray-500 text-white font-semibold rounded transition"
-            >
-              إلغاء
-            </button>
+            <Button onClick={editingId ? handleUpdate : handleCreate} className="flex-1" variant="primary">{editingId ? '💾 حفظ' : '➕ إضافة'}</Button>
+            <Button onClick={cancelForm} className="flex-1" variant="ghost">إلغاء</Button>
           </div>
         </div>
       )}
@@ -267,18 +255,8 @@ export default function StudentsPage() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <button
-                  onClick={() => startEdit(stu)}
-                  className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition text-sm"
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => handleDelete(stu.student_id)}
-                  className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition text-sm"
-                >
-                  🗑️
-                </button>
+                <Button onClick={() => startEdit(stu)} className="px-3 py-1 text-sm" variant="primary">✏️</Button>
+                <Button onClick={() => handleDelete(stu.student_id)} className="px-3 py-1 text-sm" variant="danger">🗑️</Button>
               </div>
             </div>
           ))

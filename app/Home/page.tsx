@@ -1,114 +1,30 @@
-// File: app/home/page.tsx
 'use client';
 
-import React from 'react';
+import Button from '../components/Button';
 
 export default function HomePage() {
-  const buttonStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(0, 112, 243, 0.85)',
-    color: '#fff',
-    padding: '14px 28px',
-    borderRadius: '10px',
-    textDecoration: 'none',
-    fontWeight: 'bold',
-    transition: 'all 0.3s',
-    minWidth: 140,
-    textAlign: 'center',
-    fontSize: '16px',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
-    display: 'inline-block',
-  };
-
-  const buttonContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: 20,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  };
+  const buttons = [
+    { href: '/attendance', label: 'الحضور' },
+    { href: '/students', label: 'إضافة مخدوم' },
+    { href: '/classes', label: 'إنشاء فصل' },
+  ];
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        width: '82vw',
-        height: '100vh',
- 
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        textAlign: 'center',
-        padding: 20,
-        overflow: 'hidden',
-      }}
-    >
-      {/* Overlay */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.45)',
-          zIndex: 1,
-        }}
-      />
+    <section className="relative rounded-lg overflow-hidden" style={{ minHeight: '60vh' }}>
+      <div className="absolute inset-0 bg-black/50" />
 
-      {/* Content */}
-      <div style={{ position: 'relative', zIndex: 2 }}>
-        <h1
-          style={{
-            fontSize: 'clamp(24px, 5vw, 48px)',
-            fontWeight: 'bold',
-            color: '#fff',
-            marginBottom: 15,
-            lineHeight: 1.4,
-            textShadow: '3px 3px 10px rgba(0,0,0,0.8)',
-          }}
-        >
-          كنيسة السيدة العذراء<br />
-          مارمينا أثناسيوس الرسولي<br />
-          مدينة نصر
-        </h1>
+      <div className="relative z-10 flex flex-col items-center justify-center text-center py-20">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-white mb-4">كنيسة السيدة العذراء<br/>مارمينا أثناسيوس الرسولي<br/>مدينة نصر</h1>
+        <p className="text-white/90 text-lg sm:text-xl mb-8">نظام إدارة الخدمة</p>
 
-        <p
-          style={{
-            fontSize: 'clamp(16px, 3vw, 22px)',
-            color: '#fff',
-            marginBottom: 40,
-            fontWeight: 500,
-            textShadow: '2px 2px 8px rgba(0,0,0,0.8)',
-          }}
-        >
-          نظام إدارة الخدمة
-        </p>
-
-        <div style={buttonContainerStyle}>
-          {[
-            { href: '/attendance', label: 'الحضور' },
-            { href: '/students', label: 'إضافة مخدوم' },
-            { href: '/classes', label: 'إنشاء فصل' },
-          ].map((btn) => (
-            <a
-              key={btn.href}
-              href={btn.href}
-              style={buttonStyle}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  'rgba(0, 112, 243, 1)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  'rgba(0, 112, 243, 0.85)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              {btn.label}
-            </a>
+        <div className="flex gap-4 flex-wrap justify-center">
+          {buttons.map((b) => (
+            <Button key={b.href} href={b.href} className="text-center px-8" variant="primary">
+              {b.label}
+            </Button>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

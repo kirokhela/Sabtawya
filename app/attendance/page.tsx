@@ -11,6 +11,7 @@ import {
   getStudents,
   updateAttendance,
 } from '../actions';
+import Button from '../components/Button';
 
 
 export default function AttendancePage() {
@@ -194,14 +195,9 @@ const formatDate = (date: Date | string) => {
       {/* Add Button */}
       {formStudent.student_id > 0 && (
         <div className="flex justify-center mb-6">
-          <button
-            onClick={handleAddOrUpdate}
-            className={`px-6 py-2 rounded ${
-              editingId ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
-            } text-white font-semibold transition`}
-          >
+          <Button onClick={handleAddOrUpdate} variant={editingId ? 'primary' : 'primary'} className="px-6 py-2">
             {editingId ? 'حفظ تعديل' : '➕ إضافة حضور'}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -228,18 +224,8 @@ const formatDate = (date: Date | string) => {
                   <td className="border px-2 py-1">{getStatus(att.time)}</td>
                   <td className="border px-2 py-1">{att.time}</td>
                   <td className="border px-2 py-1 flex justify-center gap-2">
-                    <button
-                      onClick={() => handleEdit(att)}
-                      className="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => handleDelete(att.attendance_id)}
-                      className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition"
-                    >
-                      🗑️
-                    </button>
+                    <Button onClick={() => handleEdit(att)} className="px-3 py-1 text-sm" variant="primary">✏️</Button>
+                    <Button onClick={() => handleDelete(att.attendance_id)} className="px-3 py-1 text-sm" variant="danger">🗑️</Button>
                   </td>
                 </tr>
               );

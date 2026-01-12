@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import bgImage from '../public/bg.jpg';
 import { loginAction } from './actions';
+import Button from './components/Button';
 
 export default function LoginPage() {
   const [name, setName] = useState('');
@@ -35,62 +36,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        width: '100vw',
-        height: '100vh',
-        backgroundImage: `url(${bgImage.src})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-        fontFamily: "'Cairo', sans-serif",
-      }}
-    >
-      {/* Dark overlay */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.45)',
-          zIndex: 1,
-        }}
-      />
+    <div className="fixed inset-0 w-screen h-screen flex items-center justify-center p-6" style={{ backgroundImage: `url(${bgImage.src})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <div className="absolute inset-0 bg-black/50" />
 
-      {/* Login Box */}
-      <div style={{ ...styles.loginBox, position: 'relative', zIndex: 2 }}>
-        <img src="/Church.jpg" alt="Logo" style={styles.logo} />
-        <h3 style={{ marginBottom: 25, fontWeight: 700 }}>تسجيل الدخول</h3>
+      <div className="relative z-10 max-w-md w-full bg-white rounded-2xl p-8 shadow-2xl">
+        <img src="/Church.jpg" alt="Logo" className="mx-auto mb-4 w-36 rounded-lg" />
+        <h3 className="text-center mb-6 font-bold text-lg">تسجيل الدخول</h3>
 
         <form onSubmit={handleLogin}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>الإيميل</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              style={styles.input}
-            />
+          <div className="mb-4 text-right">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">الاسم</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500" />
           </div>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>كلمة السر</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={styles.input}
-            />
+          <div className="mb-4 text-right">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">كلمة السر</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500" />
           </div>
 
-          <button type="submit" style={styles.button}>دخول</button>
+          <Button type="submit" className="w-full">دخول</Button>
 
-          {error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
+          {error && <p className="text-red-500 mt-3">{error}</p>}
         </form>
       </div>
     </div>
