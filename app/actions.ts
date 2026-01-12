@@ -7,21 +7,17 @@ const sql = neon(process.env.DATABASE_URL!);
 // =======================
 // Users (Admin Management)
 // =======================
-export type User = {
-  id: number;
-  name: string;
-  role: string;
-};
+
+export type User = { id: number; name: string; password: string; role: string };
 
 export async function loginAction(
   name: string,
   password: string
 ): Promise<User | null> {
   const users = (await sql`
-    SELECT id, name, role
+    SELECT id, name, password, role
     FROM users
-    WHERE name = ${name}
-      AND password = ${password}
+    WHERE name = ${name} AND password = ${password}
     LIMIT 1
   `) as User[];
   return users[0] ?? null;
