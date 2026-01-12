@@ -1,7 +1,8 @@
-// File: app/layout.tsx
 'use client';
 
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import bgImage from '../public/bg.jpg'; // reference your image
 import './globals.css';
 
 export default function RootLayout({
@@ -10,101 +11,99 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const isLoginPage = pathname === '/';
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem('role');
+    setRole(storedRole);
+  }, []);
+
+  const handleSignOut = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('role');
+    router.push('/');
+  };
 
   return (
     <html lang="ar" dir="rtl">
-      <body className="bg-gray-50 font-sans">
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="fixed top-4 right-4 z-50 lg:hidden bg-white p-2 rounded-lg shadow-lg"
-          aria-label="Toggle menu"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            {sidebarOpen ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            )}
-          </svg>
-        </button>
+      <body
+        style={{
+          margin: 0,
+          fontFamily: "'Cairo', sans-serif",
+          minHeight: '100vh',
+          backgroundImage: `url(${bgImage.src})`,
+          backgroundSize: 'contain', // smaller bg
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center top',
+          display: 'flex',
+        }}
+      >
+        {!isLoginPage && (
+          <>
+            {/* Sidebar */}
+            <aside
+              style={{
+                position: 'fixed',
+                top: 0,
+                right: 0,
+                width: 260,
+                height: '100vh',
+                background: '#fff',
+                boxShadow: '0 0 20px rgba(0,0,0,0.15)',
+                padding: 20,
+                zIndex: 1000,
+              }}
+            >
+              <h2 style={{ marginBottom: 20, fontWeight: 'bold' }}>
+                نظام إدارة الخدمة
+              </h2>
 
-        {/* Overlay for mobile */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
+              <nav style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <a href="/home">🏠 الرئيسية</a>
+                <a href="/classes">📚 الفصول</a>
+                <a href="/students">🙋‍♂️ المخدومين</a>
+                <a href="/attendance">✅ الحضور</a>
+
+                {/* 🔐 Admin only */}
+                {role === 'admin' && (
+                  <a href="/users">👤 إدارة المستخدمين</a>
+                )}
+              </nav>
+
+              <button
+                onClick={handleSignOut}
+                style={{
+                  marginTop: 30,
+                  color: 'red',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: 'none',
+                }}
+              >
+                تسجيل الخروج
+              </button>
+            </aside>
+          </>
         )}
 
-        {/* Sidebar */}
-        <aside
-          className={`
-            fixed top-0 right-0 h-full w-64 bg-white shadow-xl z-40
-            transform transition-transform duration-300 ease-in-out
-            ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}
-            lg:translate-x-0 lg:static lg:z-0
-          `}
+        {/* Main content */}
+        <main
+          style={{
+            marginRight: !isLoginPage ? 260 : 0, // leave space for sidebar
+            padding: 20,
+            width: '100%',
+            minHeight: '100vh',
+            boxSizing: 'border-box',
+          }}
         >
-          <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-8">
-              نظام إدارة الخدمة
-            </h1>
-            
-            <nav className="space-y-2">
-              <a
-                href="/"
-                className="block px-4 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                onClick={() => setSidebarOpen(false)}
-              >
-                🏠 الرئيسية
-              </a>
-              <a
-                href="/classes"
-                className="block px-4 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                onClick={() => setSidebarOpen(false)}
-              >
-                📚 الفصول
-              </a>
-              <a
-                href="/students"
-                className="block px-4 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                onClick={() => setSidebarOpen(false)}
-              >
-                👥 المخدومين
-              </a>
-              <a
-                href="/attendance"
-                className="block px-4 py-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                onClick={() => setSidebarOpen(false)}
-              >
-                ✅ الحضور
-              </a>
-            </nav>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <div className="lg:mr-64 min-h-screen">
-          <main className="p-4 md:p-6 lg:p-8">
-            {children}
-          </main>
-        </div>
+          {children}
+        </main>
       </body>
     </html>
   );
