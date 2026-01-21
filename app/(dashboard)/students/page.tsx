@@ -2,9 +2,10 @@
 
 import Button from "@/app/components/Button";
 import GlassCard from "@/app/components/GlassCard";
-import type { Gender } from "@prisma/client";
 import { useEffect, useMemo, useState } from "react";
 
+
+type Gender = "MALE" | "FEMALE";
 type ClassItem = {
   id: string;
   nameAr: string;
