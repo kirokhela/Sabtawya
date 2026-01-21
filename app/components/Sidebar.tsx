@@ -1,149 +1,108 @@
 "use client";
 
+import { filterNavByRole } from "@/app/lib/filterNav";
+import { NAV_ITEMS } from "@/app/lib/navLinks";
+import type { Role } from "@prisma/client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useToast } from "./ToastProvider";
 
-const links = [
-  { href: "/home", label: "الرئيسية" },
-  { href: "/students", label: "الطلاب" },
-  { href: "/classes", label: "الفصول" },
-  { href: "/attendance", label: "الحضور" },
-  { href: "/reasons", label: "الأسباب" },
-  { href: "/rewards", label: "المكافآت" },
-  { href: "/users", label: "المستخدمين" },
-  { href: "/logs", label: "السجلات" },
-];
-
-function MenuIcon({ open }: { open: boolean }) {
-  return (
-    <div className="relative w-6 h-6">
-      <span
-        className={`absolute left-0 top-1.5 h-0.5 w-6 bg-slate-900 transition ${
-          open ? "translate-y-2 rotate-45" : ""
-        }`}
-      />
-      <span
-        className={`absolute left-0 top-3 h-0.5 w-6 bg-slate-900 transition ${
-          open ? "opacity-0" : ""
-        }`}
-      />
-      <span
-        className={`absolute left-0 top-4.5 h-0.5 w-6 bg-slate-900 transition ${
-          open ? "-translate-y-2 -rotate-45" : ""
-        }`}
-      />
-    </div>
-  );
-}
-
-export default function Sidebar() {
+export default function Sidebar({
+  role,
+  open,
+  onClose,
+}: {
+  role: Role;
+  open: boolean;
+  onClose: () => void;
+}) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
-  // close drawer on route change
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const items = filterNavByRole(NAV_ITEMS, role);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/login";
+    const res = await fetch("/api/auth/logout", { method: "POST" });
+    if (!res.ok) {
+      return toast({ type: "error", title: "فشل", message: "لم يتم تسجيل الخروج" });
+    }
+    toast({ type: "success", title: "تم", message: "تم تسجيل الخروج" });
+    router.replace("/login");
   }
+
+  // Mobile overlay
+  const showOverlay = open;
 
   return (
     <>
-      {/* top bar (mobile) */}
-      <div className="md:hidden sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="text-sm font-black">نظام مدارس الأحد</div>
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="p-2 rounded-xl border border-slate-200 bg-white active:scale-[0.98]"
-            aria-label="فتح القائمة"
-          >
-            <MenuIcon open={open} />
-          </button>
-        </div>
-      </div>
+      {showOverlay && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40"
+          onClick={onClose}
+        />
+      )}
 
-      {/* overlay (mobile) */}
-      <div
-        className={`md:hidden fixed inset-0 z-40 bg-black/40 transition ${
-          open ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setOpen(false)}
-      />
-
-      {/* sidebar drawer (mobile) */}
       <aside
-        className={`md:hidden fixed top-0 right-0 z-50 h-full w-72 bg-white border-l border-slate-200 shadow-2xl transform transition ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={[
+          // Desktop: static
+          "md:static md:translate-x-0 md:z-auto md:h-auto",
+          // Mobile: drawer
+          "fixed top-0 right-0 z-50 h-full w-[280px] transition-transform duration-200",
+          open ? "translate-x-0" : "translate-x-full",
+        ].join(" ")}
       >
-        <div className="p-4 border-b border-slate-200">
-          <div className="font-black text-base">نظام مدارس الأحد</div>
-          <div className="text-xs text-slate-500 mt-1">إدارة الحضور والنقاط</div>
-        </div>
+        <div className="h-full md:h-[calc(100vh-48px)] md:sticky md:top-6">
+          <div className="h-full rounded-3xl border border-white/25 bg-white/10 backdrop-blur-xl shadow-2xl p-4 flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="text-white">
+                <div className="text-lg font-black">Sabtawya</div>
+                <div className="text-xs text-white/70 font-bold">
+                  الدور: {role === "SUPER_ADMIN" ? "SuperAdmin" : role === "ADMIN" ? "Admin" : role === "GATE_ADMIN" ? "Gate" : "خادم"}
+                </div>
+              </div>
 
-        <nav className="p-3 flex flex-col gap-1">
-          {links.map((l) => {
-            const active = pathname === l.href;
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`px-3 py-2 rounded-xl text-sm font-semibold transition
-                  ${active ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}
-                `}
+              <button
+                onClick={onClose}
+                className="md:hidden rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-white text-sm font-extrabold"
               >
-                {l.label}
-              </Link>
-            );
-          })}
-        </nav>
+                ✕
+              </button>
+            </div>
 
-        <div className="p-3 border-t border-slate-200 mt-auto">
-          <button
-            onClick={logout}
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold hover:bg-slate-50"
-          >
-            تسجيل الخروج
-          </button>
-        </div>
-      </aside>
+            {/* Links */}
+            <nav className="mt-5 space-y-2 flex-1 overflow-auto">
+              {items.map((item) => {
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onClose}
+                    className={[
+                      "block rounded-2xl px-4 py-3 text-sm font-extrabold transition",
+                      active
+                        ? "bg-white text-slate-900 shadow"
+                        : "text-white/90 hover:bg-white/10",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
 
-      {/* sidebar (desktop) */}
-      <aside className="hidden md:block fixed right-0 top-0 h-screen w-64 bg-white border-l border-slate-200">
-        <div className="p-5">
-          <div className="font-black text-lg">نظام مدارس الأحد</div>
-          <div className="text-xs text-slate-500 mt-1">إدارة الحضور والنقاط</div>
-        </div>
-
-        <nav className="px-3 pb-3 flex flex-col gap-1">
-          {links.map((l) => {
-            const active = pathname === l.href;
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`px-3 py-2 rounded-xl text-sm font-semibold transition
-                  ${active ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}
-                `}
+            {/* Logout at bottom */}
+            <div className="pt-4 border-t border-white/15">
+              <button
+                onClick={logout}
+                className="w-full rounded-2xl bg-white/15 hover:bg-white/20 text-white font-extrabold px-4 py-3 transition border border-white/15"
               >
-                {l.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="absolute bottom-0 right-0 left-0 p-3 border-t border-slate-200">
-          <button
-            onClick={logout}
-            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold hover:bg-slate-50"
-          >
-            تسجيل الخروج
-          </button>
+                تسجيل الخروج
+              </button>
+            </div>
+          </div>
         </div>
       </aside>
     </>

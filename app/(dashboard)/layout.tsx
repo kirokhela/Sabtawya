@@ -1,15 +1,16 @@
 import AppBackground from "../components/AppBackground";
-import Sidebar from "../components/Sidebar";
+import SidebarShell from "./sidebar-shell";
+import { requireAuth } from "@/app/lib/serverAuth.ts";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const auth = await requireAuth(); // لازم يرجع { role: "SUPER_ADMIN" | ... }
+
   return (
     <div className="min-h-screen relative">
       <AppBackground />
-      <Sidebar />
-
-      <main className="pt-4 md:pt-6 md:pr-72 px-4 md:px-6">
+      <SidebarShell role={auth.role}>
         {children}
-      </main>
+      </SidebarShell>
     </div>
   );
 }
