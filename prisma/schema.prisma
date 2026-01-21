@@ -237,7 +237,6 @@ model PointTransaction {
   id        String @id @default(cuid())
   studentId String
 
-  // Either predefined reason OR manual reason text
   reasonId         String?
   manualReasonText String?
 
@@ -250,10 +249,10 @@ model PointTransaction {
   reason    PointReason? @relation(fields: [reasonId], references: [id])
   createdBy User         @relation("TxnCreatedBy", fields: [createdById], references: [id])
 
-  // optional back references (no fields/references here)
-  attendanceFrom Attendance?  @relation("AttendancePointsTxn")
-  purchaseFrom   Purchase?    @relation("PurchasePointsTxn")
-  attendances    Attendance[]
+  // ✅ one-to-one back refs (NO fields/references here)
+  attendance  Attendance?  @relation("AttendancePointsTxn")
+  purchase    Purchase?    @relation("PurchasePointsTxn")
+  attendances Attendance[]
 
   @@index([studentId, createdAt])
   @@index([reasonId])
