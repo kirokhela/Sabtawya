@@ -1,10 +1,11 @@
 "use client";
 
 import Button from "@/app/components/Button";
+import { useToast } from "@/app/components/ToastProvider";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-
 export default function LoginPage() {
+  const { toast } = useToast();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +32,12 @@ export default function LoginPage() {
 
     const data = await res.json();
     if (!res.ok) {
+
+        toast({
+  type: "error",
+  title: "فشل",
+  message: data?.message || "فشل تسجيل الدخول",
+});
       setError(data?.message || "فشل تسجيل الدخول");
       setLoading(false);
       return;

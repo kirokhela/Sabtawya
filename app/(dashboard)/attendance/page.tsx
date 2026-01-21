@@ -21,7 +21,7 @@ type AttendanceRow = {
 const genderAr = { MALE: "أولاد", FEMALE: "بنات" } as const;
 
 export default function AttendancePage() {
-    const { toast } = useToast();
+  const { toast } = useToast();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [classId, setClassId] = useState("");
   const [students, setStudents] = useState<AttendanceRow[]>([]);
@@ -138,11 +138,11 @@ async function markAttendance(studentId: string) {
           <div className="flex gap-2">
             <div className="rounded-2xl bg-white/70 border border-slate-200 px-4 py-3">
               <div className="text-xs font-extrabold text-slate-600">حاضر</div>
-              <div className="text-lg font-black">{presentCount}</div>
+              <div className="text-lg text-blue-500 font-black text-center">{presentCount}</div>
             </div>
             <div className="rounded-2xl bg-white/70 border border-slate-200 px-4 py-3">
               <div className="text-xs font-extrabold text-slate-600">متأخر</div>
-              <div className="text-lg font-black">{lateCount}</div>
+              <div className="text-lg text-red-500 font-black text-center">{lateCount}</div>
             </div>
           </div>
         </div>

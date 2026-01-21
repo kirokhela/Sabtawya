@@ -49,8 +49,22 @@ export async function GET(req: Request) {
       },
       take: 200,
     });
+const balances = await prisma.pointTransaction.groupBy({
+  by: ["studentId"],
+  where: { studentId: { in: students.map((s) => s.id) } },
+  _sum: { points: true },
+});
 
-    return NextResponse.json({ students });
+const balanceMap = new Map(balances.map((b) => [b.studentId, b._sum.points ?? 0]));
+
+const studentsWithBalance = students.map((s) => ({
+  ...s,
+  balance: balanceMap.get(s.id) ?? 0,
+}));
+
+return NextResponse.json({ students: studentsWithBalance });
+
+
   } catch {
     return NextResponse.json({ message: "غير مصرح" }, { status: 401 });
   }

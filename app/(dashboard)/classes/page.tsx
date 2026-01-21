@@ -2,6 +2,7 @@
 
 import Button from "@/app/components/Button";
 import GlassCard from "@/app/components/GlassCard";
+import { useToast } from "@/app/components/ToastProvider";
 import { useEffect, useMemo, useState } from "react";
 
 type Grade = { id: string; nameAr: string; order: number };
@@ -51,6 +52,7 @@ function Modal({
 }
 
 export default function ClassesPage() {
+  const { toast } = useToast(); 
   const [grades, setGrades] = useState<Grade[]>([]);
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [loadingGrades, setLoadingGrades] = useState(true);
@@ -127,14 +129,22 @@ export default function ClassesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nameAr: gradeName.trim(), order: gradeOrder }),
       });
-      if (!res.ok) return alert("فشل إنشاء المرحلة");
+      if (!res.ok) return toast({
+  type: "error",
+  title: "فشل",
+  message: "فشل إنشاء المرحلة",
+});
     } else {
       const res = await fetch(`/api/grades/${editingGrade.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nameAr: gradeName.trim(), order: gradeOrder }),
       });
-      if (!res.ok) return alert("فشل تعديل المرحلة");
+      if (!res.ok) return toast({
+  type: "error",
+  title: "فشل",
+  message: "فشل تعديل المرحلة",
+});
     }
 
     setGradeModal(false);
@@ -147,7 +157,11 @@ export default function ClassesPage() {
 
     const res = await fetch(`/api/grades/${id}`, { method: "DELETE" });
     const data = await res.json();
-    if (!res.ok) return alert(data?.message || "فشل حذف المرحلة");
+    if (!res.ok) return toast({
+  type: "error",
+  title: "فشل",
+  message: data?.message || "فشل حذف المرحلة",
+});
 
     await loadGrades();
     await loadClasses();
@@ -184,7 +198,11 @@ export default function ClassesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) return alert("فشل إنشاء الفصل");
+      if (!res.ok) return toast({
+  type: "error",
+  title: "فشل",
+  message: "فشل إنشاء الفصل",
+});
     } else {
       const res = await fetch(`/api/classes/${editingClass.id}`, {
         method: "PUT",
@@ -192,7 +210,11 @@ export default function ClassesPage() {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) return alert(data?.message || "فشل تعديل الفصل");
+      if (!res.ok) return toast({
+  type: "error",
+  title: "فشل",
+  message: data?.message || "فشل تعديل الفصل",
+});
     }
 
     setClassModal(false);
@@ -204,7 +226,11 @@ export default function ClassesPage() {
     if (!ok) return;
 
     const res = await fetch(`/api/classes/${id}`, { method: "DELETE" });
-    if (!res.ok) return alert("فشل حذف الفصل");
+    if (!res.ok) return toast({
+  type: "error",
+  title: "فشل",
+  message: "فشل حذف الفصل",
+});
     await loadClasses();
   }
 
