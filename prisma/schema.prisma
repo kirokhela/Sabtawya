@@ -1,0 +1,275 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  GATE_ADMIN
+  SERVANT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum ReasonCategory {
+  ATTENDANCE
+  MASS
+  CONFESSION
+  DISCIPLINE
+  OTHER
+  PURCHASE
+}
+
+enum LimitType {
+  NONE
+  ONCE_PER_CALENDAR_MONTH
+}
+
+enum SessionStatus {
+  OPEN
+  CLOSED
+  CANCELED
+}
+
+enum AttendanceStatus {
+  ON_TIME
+  LATE
+  ABSENT
+}
+
+model User {
+  id           String  @id @default(cuid())
+  nameAr       String
+  email        String? @unique
+  username     String? @unique
+  passwordHash String? // if you use credentials auth; otherwise leave null
+
+  role     Role    @default(SERVANT)
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  classAssignments ClassAssignment[]
+
+  // authored records
+  createdSessions     Session[]          @relation("SessionCreatedBy")
+  attendanceTaken     Attendance[]       @relation("AttendanceTakenBy")
+  createdReasons      PointReason[]      @relation("ReasonCreatedBy")
+  createdTransactions PointTransaction[] @relation("TxnCreatedBy")
+  createdPurchases    Purchase[]         @relation("PurchaseCreatedBy")
+  auditLogs           AuditLog[]         @relation("AuditActor")
+}
+
+model Grade {
+  id     String @id @default(cuid())
+  nameAr String @unique
+  order  Int    @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  classes ClassRoom[]
+}
+
+model ClassRoom {
+  id       String  @id @default(cuid())
+  gradeId  String
+  nameAr   String
+  gender   Gender
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  grade       Grade             @relation(fields: [gradeId], references: [id])
+  students    Student[]
+  assignments ClassAssignment[]
+
+  @@unique([gradeId, nameAr, gender])
+}
+
+model ClassAssignment {
+  id      String @id @default(cuid())
+  userId  String
+  classId String
+
+  createdAt DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+  classRoom ClassRoom @relation(fields: [classId], references: [id])
+
+  @@unique([userId, classId])
+  @@index([classId])
+}
+
+model Student {
+  id     String @id @default(cuid())
+  nameAr String
+  gender Gender
+
+  parentPhone1 String?
+  parentPhone2 String?
+  notes        String?
+
+  classId String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  classRoom ClassRoom @relation(fields: [classId], references: [id])
+
+  attendances  Attendance[]
+  transactions PointTransaction[]
+  purchases    Purchase[]
+
+  @@index([classId])
+}
+
+model PointReason {
+  id        String         @id @default(cuid())
+  nameAr    String
+  points    Int // FIXED points for this reason (required)
+  category  ReasonCategory
+  limitType LimitType      @default(NONE)
+  isActive  Boolean        @default(true)
+
+  // Who can use this predefined reason
+  allowedRoles Role[]
+
+  // optional creator
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy    User?              @relation("ReasonCreatedBy", fields: [createdById], references: [id])
+  transactions PointTransaction[]
+
+  @@unique([nameAr, category])
+}
+
+model Session {
+  id       String        @id @default(cuid())
+  date     DateTime // Saturday date (store as date at 00:00 UTC or your choice)
+  startAt  DateTime // 16:00 Cairo for that date
+  cutoffAt DateTime // 16:45 Cairo for that date
+  status   SessionStatus @default(OPEN)
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy   User?        @relation("SessionCreatedBy", fields: [createdById], references: [id])
+  attendances Attendance[]
+
+  @@unique([date])
+}
+
+model Attendance {
+  id        String @id @default(cuid())
+  sessionId String
+  studentId String
+
+  status    AttendanceStatus
+  takenAt   DateTime         @default(now())
+  takenById String
+
+  // link to the points transaction created automatically (usually +5 or +0)
+  pointsTxnId String?           @unique
+  pointsTxn   PointTransaction? @relation("AttendancePointsTxn", fields: [pointsTxnId], references: [id])
+
+  session            Session           @relation(fields: [sessionId], references: [id])
+  student            Student           @relation(fields: [studentId], references: [id])
+  takenBy            User              @relation("AttendanceTakenBy", fields: [takenById], references: [id])
+  pointTransaction   PointTransaction? @relation(fields: [pointTransactionId], references: [id])
+  pointTransactionId String?
+
+  @@unique([sessionId, studentId])
+  @@index([studentId, takenAt])
+}
+
+model RewardItem {
+  id         String  @id @default(cuid())
+  nameAr     String
+  costPoints Int
+  stock      Int? // optional inventory
+  isActive   Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchases Purchase[]
+
+  @@unique([nameAr])
+}
+
+model Purchase {
+  id        String @id @default(cuid())
+  studentId String
+  itemId    String
+  quantity  Int    @default(1)
+  totalCost Int
+
+  createdById String
+  createdAt   DateTime @default(now())
+
+  // link to negative points transaction
+  pointsTxnId String?           @unique
+  pointsTxn   PointTransaction? @relation("PurchasePointsTxn", fields: [pointsTxnId], references: [id])
+
+  student   Student    @relation(fields: [studentId], references: [id])
+  item      RewardItem @relation(fields: [itemId], references: [id])
+  createdBy User       @relation("PurchaseCreatedBy", fields: [createdById], references: [id])
+
+  @@index([studentId, createdAt])
+}
+
+model PointTransaction {
+  id        String @id @default(cuid())
+  studentId String
+
+  // Either predefined reason OR manual reason text
+  reasonId         String?
+  manualReasonText String?
+
+  points Int
+
+  createdById String
+  createdAt   DateTime @default(now())
+
+  student   Student      @relation(fields: [studentId], references: [id])
+  reason    PointReason? @relation(fields: [reasonId], references: [id])
+  createdBy User         @relation("TxnCreatedBy", fields: [createdById], references: [id])
+
+  // optional back references (no fields/references here)
+  attendanceFrom Attendance?  @relation("AttendancePointsTxn")
+  purchaseFrom   Purchase?    @relation("PurchasePointsTxn")
+  attendances    Attendance[]
+
+  @@index([studentId, createdAt])
+  @@index([reasonId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  action      String // e.g. "ATTENDANCE_MARKED", "REASON_CREATED", "TXN_CREATED"
+  entityType  String? // e.g. "Student", "Attendance", "PointReason", "PointTransaction"
+  entityId    String? // the id of that entity
+  metadata    Json? // store details: before/after, reason, etc.
+  createdAt   DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorUserId], references: [id])
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
